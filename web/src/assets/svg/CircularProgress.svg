@@ -1,0 +1,4 @@
+<svg class="inline-flex w-full h-full c-loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="--progress:0">
+    <circle class="bg"></circle>
+    <circle class="fg"></circle>
+</svg>

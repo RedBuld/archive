@@ -1,0 +1,18 @@
+.ranobe-reader-container .ranobe-reader-content * {
+    font-family: arial, helvetica, sans-serif;
+    font-size: var(--reader-font-size,16px);
+    line-height: var(--reader-line-height,1.4);
+    margin: var(--reader-line-gap,8px) 0px;
+    text-align: var(--reader-text-align,'start');
+    text-indent: var(--reader-text-indent,'0em');
+}
+.ranobe-reader-container .ranobe-reader-content header,
+.ranobe-reader-container .ranobe-reader-content header * {
+    text-indent: 0;
+}
+/* .ranobe-reader-container .ranobe-reader-content header {
+    margin: calc(2 *var(--reader-line-gap,8px)) 0px;
+} */
+.ranobe-reader-container .ranobe-reader-content h1 {
+    font-weight: 700;
+}

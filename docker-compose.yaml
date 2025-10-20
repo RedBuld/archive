@@ -1,0 +1,27 @@
+services:
+    archive:
+        image: redbuld/archive
+        # build:
+        #     context: .
+        #     dockerfile: ./Dockerfile
+        # restart: unless-stopped
+        ports:
+            - 7050:7050
+        environment:
+            - DB_USER=archive
+            - DB_PASSWORD=archive
+            - DB_BASE=archive
+            - DB_HOST=database
+            - RD_HOST=redis
+        volumes:
+            - "./app:/app"
+            - "./web/dist:/app/web"
+            - "./app/web/covers:/app/web/covers"
+            - "U:\\:/app/web/download"
+        networks:
+            - tgbot
+        # command: "fastapi dev --host 0.0.0.0 --port 7050"
+networks:
+    tgbot:
+        name: tgbot
+        external: true

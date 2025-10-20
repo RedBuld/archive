@@ -1,0 +1,286 @@
+@import "swiper/css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+    --navbar-height: 3rem;
+    --navbar-margin: 1rem;
+    --banner-height: 11rem;
+    --overlay-height: 60vh;
+    --stats-block-height: calc( var(--banner-height) - 1rem );
+    --mobile-search-results-height: calc( 100vh - var(--navbar-height) );
+    /*  */
+    --banner-overlap: calc( var(--navbar-height) + var(--navbar-margin) );
+    --banner-top: calc( -1 * var(--banner-overlap) );
+    --banner-blur-height: calc( var(--banner-height) + var(--banner-overlap) );
+    --banner-backdrop-height: calc( var(--overlay-height) - var(--banner-blur-height) );
+    /*  */
+    --reader-header-height: 3rem;
+    --reader-header-top: calc( -1 * var(--reader-header-height) );
+    --reader-page-height: calc( 100vh - var(--reader-header-height) );
+    /*  */
+    --backdrop-top: calc( var(--banner-height) );
+    --backdrop-bg: 24 24 27;
+    /*  */
+    --text-base: theme(fontSize.base);
+    --text-sm: theme(fontSize.sm);
+
+    --min-h-compensated: calc( 100vh - var(--reader-header-height) )
+}
+
+@keyframes skeleton-loading {
+    0% {
+        transform: translate(-10%,0%);
+    }
+    100% {
+        transform: translate(110%,0%);
+    }
+}
+
+html *,
+body * {
+    font-family: "Onest";
+}
+
+.skeleton-animation {
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-animation::after {
+    content: '';
+    display: block;
+    position: absolute;
+    z-index: 5;
+    top: 0%;
+    left: 0%;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 10%, rgba(255,255,255,0) 20%) ;
+    background-size: 100%;
+    animation: skeleton-loading 2s infinite linear;
+    pointer-events: none;
+}
+
+.banner-backdrop {
+    background-image: radial-gradient( ellipse at top center, theme(colors.zinc.900/0.75) 10%, theme(colors.zinc.900/1) 70% )
+}
+.banner-bg {
+    background-image: url(data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==);
+    transition: background-image .3s linear;
+}
+
+.notification-row {
+    gap: 0.5rem 1rem;
+    grid-template-areas:
+        "art action   date    "
+        "art eng_name eng_name"
+        "art name     name    ";
+    grid-template-columns: 4rem minmax(0, calc(100% - 4rem - 8rem - 2rem)) 8rem;
+}
+.composite-index-page {
+    gap: 1rem;
+    grid-template-areas:
+        "left space   space   right"
+        "left filters filters right"
+        "left empty   empty   right"
+        "left content content right"
+        "left padding padding right";
+        grid-template-columns: 0.5rem 10rem minmax(0, calc(100vw - 10rem - 1rem)) 0.5rem;
+}
+
+.composite-header-panel {
+    gap: 1rem;
+    grid-template-areas:
+        "left art     title   right"
+        "left info    info    right"
+        "left buttons buttons right"
+        "left stats   stats   right"
+        "left content content right"
+        "left padding padding right";
+    grid-template-columns: 0.5rem 8rem minmax(0, calc(100vw - 8rem - 1rem)) 0.5rem;
+}
+
+.search-result {
+    gap: 1rem;
+    grid-template-areas:
+        "art     title";
+    grid-template-columns: 6rem calc(100% - 8rem - 1rem);
+}
+
+@media (max-width: 450px) {
+    .composite-header-panel {
+        grid-template-areas:
+            "left art     right"
+            "left title   right"
+            "left info    right"
+            "left buttons right"
+            "left stats   right"
+            "left content right"
+            "left padding right";
+        grid-template-columns: 0.5rem minmax(0, calc(100vw - 1rem)) 0.5rem;
+    }
+    .composite-header-panel .main-art {
+        height: auto!important;
+    }
+    .composite-header-panel .main-art img {
+        position: static!important;
+    }
+    .composite-header-panel .main-title {
+        height: auto!important;
+    }
+}
+
+@media (screen(sm)) {
+    :root {
+        --navbar-margin: 2rem;
+        --banner-height: 13rem;
+    }
+    .composite-index-page {
+        gap: 1rem;
+        grid-template-areas:
+            "left space   space   right"
+            "left filters filters right"
+            "left empty   empty   right"
+            "left content content right"
+            "left padding padding right";
+        grid-template-columns: 1fr 12rem minmax(0, calc(theme(screens.xl) - 12rem - 1rem)) 1fr;
+    }
+    .composite-header-panel {
+        gap: 1rem;
+        grid-template-areas:
+            "left art     title   right"
+            "left art     buttons right"
+            "left info    info    right"
+            "left stats   stats   right"
+            "left content content right"
+            "left padding padding right";
+        grid-template-columns: 1fr 12rem minmax(0, calc(theme(screens.sm) - 12rem - 1rem)) 1fr;
+    }
+}
+
+@media (screen(md)) {
+    .composite-index-page,
+    .composite-header-panel {
+        gap: 1rem 1.5rem;
+        grid-template-columns: 1fr 13rem minmax(0, calc(theme(screens.md) - 13rem - 1rem)) 1fr;
+    }
+    .composite-header-panel {
+        grid-template-areas:
+            "left art     title   right"
+            "left art     buttons right"
+            "left stats   info    right"
+            "left content content right"
+            "left padding padding right";
+    }
+}
+
+@media (screen(lg)) {
+    .composite-index-page,
+    .composite-header-panel {
+        gap: 1rem 1.5rem;
+        grid-template-columns: 1fr 13rem minmax(0, calc(theme(screens.lg) - 13rem - 1rem)) 1fr;
+    }
+}
+
+@media (screen(xl)) {
+    .composite-index-page,
+    .composite-header-panel {
+        grid-template-columns: 1fr 13rem minmax(0, calc(theme(screens.xl) - 13rem - 1rem)) 1fr;
+    }
+}
+
+@media (screen(2xl)) {
+    .composite-index-page,
+    .composite-header-panel {
+        grid-template-columns: 1fr 13rem minmax(0, calc(theme(screens.2xl) - 13rem - 1rem)) 1fr;
+    }
+}
+
+.single-file-row {
+    gap: .25rem .5rem;
+    grid-template-areas:
+        "name     ext icon"
+        "eng_name size icon";
+    grid-template-columns: auto auto 1.25rem;
+}
+
+@media (screen(sm)) {
+    .single-file-row {
+        gap: .25rem 1rem;
+        grid-template-columns: auto auto 1.5rem;
+    }
+}
+
+.download-queue-task {
+    gap: 1rem 0rem;
+    grid-template-areas: "name progress cancel";
+    grid-template-columns: auto min(12rem,calc(50vw - 1rem)) 3rem;
+}
+
+.c-loader {
+    --size: 100px;
+    --half-size: calc(var(--size) / 2);
+    --stroke-width: .5rem;
+    --radius: calc((var(--size) - var(--stroke-width)) / 2);
+    --circumference: calc(var(--radius) * pi * 2);
+    --dash: calc((var(--progress) * var(--circumference)) / 100);
+}
+
+.c-loader circle {
+    cx: var(--half-size);
+    cy: var(--half-size);
+    r: var(--radius);
+    stroke-width: var(--stroke-width);
+    fill: none;
+    stroke-linecap: round;
+}
+  
+.c-loader circle.bg {
+    stroke: rgba(255,255,255,0.2);
+}
+  
+.c-loader circle.fg {
+    transform: rotate(-90deg);
+    transform-origin: var(--half-size) var(--half-size);
+    stroke-dasharray: var(--dash) calc(var(--circumference) - var(--dash));
+    stroke: rgba(255,255,255,1);
+}
+
+.short-stats-block {
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 100%);
+}
+.short-stats-block:hover {
+    background-image: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+}
+.short-stats-block .c-loader circle.fg {
+    transition: all .3s linear;
+}
+@media (screen(md)) {
+    .short-stats-block {
+        background-image: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%);
+    }
+    .short-stats-block:hover {
+        background-image: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%);
+    }
+}
+
+.ScrollbarsCustom-Wrapper {
+    inset: 0px !important;
+}
+
+.grid-cols-1{}
+.grid-cols-2{}
+.grid-cols-3{}
+.grid-cols-4{}
+.grid-cols-5{}
+.grid-cols-6{}
+.grid-cols-7{}
+.grid-cols-8{}
+.grid-cols-9{}
+.grid-cols-10{}
+.grid-cols-11{}
+.grid-cols-12{}
