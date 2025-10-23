@@ -3,9 +3,11 @@ import { ReaderContext } from '@/contexts/ReaderContext'
 
 export default function RanobeReaderFlow({
     content,
+    title,
     ref
 }:{
     content: ReactElement[],
+    title: string,
     ref: RefObject<HTMLDivElement>
 })
 {
@@ -124,6 +126,11 @@ export default function RanobeReaderFlow({
                     ref={ ref }
                     className="flex flex-col flex-grow w-full min-h-full max-w-screen-2xl relative text-white ranobe-reader-content break-words"
                 >
+                    { title ? (
+                        <header>
+                            <h1>{title}</h1>
+                        </header>
+                    ) : (<></>)}
                     { content.map( ( el ) => {
                         if( el.type == 'img' && show_images == 'no' )
                         {

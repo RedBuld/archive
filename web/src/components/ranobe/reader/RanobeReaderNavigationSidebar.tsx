@@ -1,13 +1,14 @@
 import { RefObject, useContext } from "react"
+import { Signal } from "@preact/signals-react"
 import { NavLink } from "react-router"
-import { ReaderRanobeVolume, ReaderRanobeChapter, ReaderRanobe } from "@/types/ranobe"
+import { ReaderRanobe, ReaderRanobeNavigationElement } from "@/types/ranobe"
 import { ReaderContext, ReaderNavigationContext } from "@/contexts/ReaderContext"
 import { getRanobeReaderPageLink } from '@/tools/navigation'
 
 export default function RanobeReaderNavigationSidebar({
     ranobe
 }:{
-    ranobe?: ReaderRanobeVolume
+    ranobe: Signal<ReaderRanobe|null>
 })
 {
     const readerContext = useContext( ReaderContext )
@@ -16,10 +17,10 @@ export default function RanobeReaderNavigationSidebar({
 
     return (
         <div className="flex flex-col">
-        { ranobe?.chapters && ranobe.chapters.map( (chapter) => {
+        { ranobe.value && ranobe.value.navigation && ranobe.value.navigation.map( (chapter) => {
             return <RanobeReaderNavigationSidebarElement
                 key={chapter.number}
-                ranobe={ranobe}
+                ranobe={ranobe.value}
                 chapter={chapter}
                 currentVolume={readerContext.currentVolumeNumber.value}
                 currentChapter={readerContext.currentChapterNumber.value}
@@ -37,12 +38,13 @@ function RanobeReaderNavigationSidebarElement({
     currentChapter,
     activeLinkRef
 }:{
-    ranobe: ReaderRanobe,
-    chapter: ReaderRanobeChapter,
+    ranobe: ReaderRanobe|null,
+    chapter: ReaderRanobeNavigationElement,
     currentVolume: number,
     currentChapter: number,
     activeLinkRef: RefObject<HTMLAnchorElement|null>
 }) {
+    if( !ranobe ) return null
     
     const active = ( currentVolume == chapter.volume_number && currentChapter == chapter.number )
     const link = getRanobeReaderPageLink( ranobe.slug, chapter.volume_number, chapter.number )

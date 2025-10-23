@@ -4,9 +4,11 @@ import { useSignal, useSignalEffect } from '@preact/signals-react'
 
 export default function RanobeReaderPages({
     content,
+    title,
     ref
 }:{
     content: ReactElement[],
+    title: string,
     ref: RefObject<HTMLDivElement>
 })
 {
@@ -253,8 +255,13 @@ export default function RanobeReaderPages({
             >
                 <div
                     ref={ vPagesRef }
-                    className="block h-full w-full absolute top-0"
+                    className="block h-full w-full relative top-0"
                 >
+                    { title ? (
+                        <header>
+                            <h1>{title}</h1>
+                        </header>
+                    ) : (<></>)}
                     { content.map( ( el ) => {
                         if( el.type == 'img' && show_images == 'no' )
                         {

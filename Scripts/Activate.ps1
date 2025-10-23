@@ -249,7 +249,7 @@ $Env:PATH = "$VenvExecDir$([System.IO.Path]::PathSeparator)$Env:PATH"
 
 $Env:DB_USER="archive"
 $Env:DB_PASSWORD="archive"
-$Env:DB_BASE="archive"
+$Env:DB_BASE="media"
 $Env:DB_HOST="localhost"
 $Env:RD_HOST="localhost"
 $Env:ES_HOST="elasticsearch"

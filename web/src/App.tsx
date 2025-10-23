@@ -23,6 +23,8 @@ import InfoIndexPage from './pages/info/InfoIndexPage'
 import InfoDisksPage from './pages/info/InfoDisksPage'
 import InfoNotificationsPage from './pages/info/InfoNotificationsPage'
 import { ReaderContextProvider, ReaderNavigationContextProvider } from './contexts/ReaderContext'
+import DemoEditorPage from './pages/demo/DemoEditorPage'
+import DemoPreviewPage from './pages/demo/DemoPreviewPage'
 
 
 const router = createBrowserRouter(
@@ -74,7 +76,10 @@ const router = createBrowserRouter(
 					element={<RanobeReaderPage />}
 				></Route>
 			</Route>
-			{/* <Route path="/ranobe" element={<UnderDevelopmentPage />}></Route> */}
+			<Route path="/demo">
+				<Route path="/demo/editor" element={<DemoEditorPage />} />
+				<Route path="/demo/preview" element={<ReaderContextProvider><ReaderNavigationContextProvider><DemoPreviewPage /></ReaderNavigationContextProvider></ReaderContextProvider>} />
+			</Route>
 			{/* <Route path="/books" element={<UnderDevelopmentPage />}></Route> */}
 			<Route path="*" element={<Navigate to={`${AnimeIndexPageLink}`} />} />
 		</Route>

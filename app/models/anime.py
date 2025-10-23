@@ -10,17 +10,17 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from app.db import DB
 from app.db import Base
-from .core import *
+from .shared import *
 
 #
 
 
-StudiosToAnime = Table(
-    "r_studios_to_anime",
+AnimeStudios = Table(
+    "_rel_anime_studios",
     Base.metadata,
     Column(
         "anime_id",
-        Integer,
+        BigInteger,
         ForeignKey('anime.id', ondelete="cascade"),
         nullable=True,
         default=None,
@@ -28,7 +28,7 @@ StudiosToAnime = Table(
     ),
     Column(
         "season_id",
-        Integer,
+        BigInteger,
         ForeignKey('anime_season.id', ondelete="cascade"),
         nullable=True,
         default=None,
@@ -36,18 +36,18 @@ StudiosToAnime = Table(
     ),
     Column(
         "studio_id",
-        Integer,
+        BigInteger,
         ForeignKey( "general_studios.id", ondelete="cascade" ),
     )
 )
 
 
-GenresToAnime = Table(
-    "r_genres_to_anime",
+AnimeGenres = Table(
+    "_rel_anime_genres",
     Base.metadata,
     Column(
         "anime_id",
-        Integer,
+        BigInteger,
         ForeignKey('anime.id', ondelete="cascade"),
         nullable=True,
         default=None,
@@ -55,7 +55,7 @@ GenresToAnime = Table(
     ),
     Column(
         "season_id",
-        Integer,
+        BigInteger,
         ForeignKey('anime_season.id', ondelete="cascade"),
         nullable=True,
         default=None,
@@ -63,18 +63,18 @@ GenresToAnime = Table(
     ),
     Column(
         "genre_id",
-        Integer,
+        BigInteger,
         ForeignKey( "general_genres.id", ondelete="cascade" ),
     )
 )
 
 
-VoicesToAnime = Table(
-    "r_voices_to_anime",
+AnimeVoices = Table(
+    "_rel_anime_voices",
     Base.metadata,
     Column(
         "anime_id",
-        Integer,
+        BigInteger,
         ForeignKey('anime.id', ondelete="cascade"),
         nullable=True,
         default=None,
@@ -82,7 +82,7 @@ VoicesToAnime = Table(
     ),
     Column(
         "season_id",
-        Integer,
+        BigInteger,
         ForeignKey('anime_season.id', ondelete="cascade"),
         nullable=True,
         default=None,
@@ -90,29 +90,67 @@ VoicesToAnime = Table(
     ),
     Column(
         "voice_id",
-        Integer,
+        BigInteger,
         ForeignKey( "general_voices.id", ondelete="cascade" ),
     )
 )
+
+# Обложки
+class AnimeCovers(Base):
+    __tablename__ = "_rel_anime_covers"
+
+    anime_id: Mapped[ int ] =\
+        Column(
+            "anime_id",
+            BigInteger,
+            ForeignKey('animes.id', ondelete="cascade"),
+            nullable=True,
+            index=True
+        )
+    season_id: Mapped[ int ] =\
+        Column(
+            "season_id",
+            BigInteger,
+            ForeignKey('anime_seasons.id', ondelete="cascade"),
+            nullable=True,
+            index=True
+        )
+    image_id: Mapped[ int ] =\
+        Column(
+            "image_id",
+            BigInteger,
+            ForeignKey( "general_images.id", ondelete="cascade" ),
+            index=True
+        )
+    index: Mapped[ int ] =\
+        Column(
+            "index",
+            Integer
+        )
+    role: Mapped[ str ] =\
+        Column(
+            "role",
+            String(10),
+            index=True
+        )
+
+# 
 
 
 #
 
 
-
-
-
 class AnimeMeta(Base):
-    __tablename__ = "anime_meta"
+    __tablename__ = "animes_meta"
 
     id: Mapped[ int ]         = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     anime_id: Mapped[ int ]   = Column(
         "anime_id",
-        Integer,
+        BigInteger,
         index=True
     )
     meta_key: Mapped[ str ]   = Column(
@@ -128,16 +166,16 @@ class AnimeMeta(Base):
 
 
 class AnimeSeasonMeta(Base):
-    __tablename__ = "anime_season_meta"
+    __tablename__ = "anime_seasons_meta"
 
     id: Mapped[ int ]         = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     season_id: Mapped[ int ]  = Column(
         "season_id",
-        Integer,
+        BigInteger,
         index=True
     )
     meta_key: Mapped[ str ]   = Column(
@@ -153,16 +191,16 @@ class AnimeSeasonMeta(Base):
 
 
 class AnimeSeriaMeta(Base):
-    __tablename__ = "anime_seria_meta"
+    __tablename__ = "anime_series_meta"
 
     id: Mapped[ int ]         = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     seria_id: Mapped[ int ] = Column(
         "seria_id",
-        Integer,
+        BigInteger,
         index=True
     )
     meta_key: Mapped[ str ]   = Column(
@@ -181,20 +219,24 @@ class AnimeSeriaMeta(Base):
 
 
 class Anime(Base):
-    __tablename__ = "anime"
+    __tablename__ = "animes"
+    __table_args__ = (
+        Index("a_title_idx", "title", mysql_length=512),
+        Index("a_rus_title_idx", "rus_title", mysql_length=512),
+    )
 
     id: Mapped[ int ]       = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
-    name: Mapped[ str ]     = Column(
-        "name",
+    title: Mapped[ str ]     = Column(
+        "title",
         Text,
         default=""
     )
-    eng_name: Mapped[ str ] = Column(
-        "eng_name",
+    rus_title: Mapped[ str ] = Column(
+        "rus_title",
         Text,
         default=""
     )
@@ -203,11 +245,21 @@ class Anime(Base):
         Text,
         default=""
     )
-    cover_id: Mapped[ int ] = Column(
-        "cover_id",
-        Integer,
-        nullable=True
-    )
+    # META
+    age_restriction: Mapped[ int ] =\
+        Column(
+            "age_restriction",
+            BigInteger,
+            ForeignKey( "general_age_restrictions.id", ondelete="SET NULL" ),
+            nullable=True
+        )
+    release_status: Mapped[ str ] =\
+        Column(
+            "release_status",
+            BigInteger,
+            ForeignKey( "general_release_statuses.id", ondelete="SET NULL" ),
+            nullable=True
+        )
     # SYSTEM
     path: Mapped[ str ]     = Column(
         "path",
@@ -224,54 +276,61 @@ class Anime(Base):
         Text,
         default="0"
     )
-    _timestamp: Mapped[ datetime ] = Column(
-        "updated",
-        TIMESTAMP,
-        default=datetime.now,
-        onupdate=datetime.now
-    )
+    
+    # 
 
-    _cover: Mapped[ Cover ] = relationship(
-        "Cover",
-        foreign_keys=cover_id,
-        remote_side="Cover.id",
-        primaryjoin="foreign(Anime.cover_id) == Cover.id",
+    # Обложки
+    covers: Mapped[ List[ Image ] ] = relationship(
+        "Image",
+        secondary=AnimeCovers.__tablename__,
+        primaryjoin="and_( foreign(AnimeCovers.anime_id) == Anime.id, AnimeCovers.role=='cover')",
+        secondaryjoin="foreign(AnimeCovers.image_id) == Image.id",
+        order_by='AnimeCovers.index.asc()',
+        lazy=True,
         viewonly=True,
     )
-    
-    # rels
+    background: Mapped[ Image ] = relationship(
+        "Image",
+        secondary=AnimeCovers.__tablename__,
+        primaryjoin="and_( foreign(AnimeCovers.anime_id) == Anime.id, AnimeCovers.role=='bg')",
+        secondaryjoin="foreign(AnimeCovers.image_id) == Image.id",
+        order_by='AnimeCovers.index.asc()',
+        lazy=True,
+        viewonly=True,
+    )
+
+    # Студии
     studios: Mapped[ List[ Studio ] ] = relationship(
-        secondary=StudiosToAnime,
+        secondary=AnimeStudios,
         order_by='Studio.name.asc()',
-        overlaps="studios",
-        # primaryjoin="foreign(anime_to_studio.c.anime_id) == Anime.id",
-        # secondaryjoin="foreign(anime_to_studio.c.studio_id) == Studio.id",
+        lazy=True
     )
 
-    genres: Mapped[ List[ Genre ] ] = relationship(
-        secondary=GenresToAnime,
-        order_by='Genre.name.asc()',
-        overlaps="genres",
-        # primaryjoin="foreign(anime_to_genre.c.anime_id) == Anime.id",
-        # secondaryjoin="foreign(anime_to_genre.c.genre_id) == Genre.id",
-    )
-
+    # Озвучки
     voices: Mapped[ List[ Voice ] ] = relationship(
-        secondary=VoicesToAnime,
+        secondary=AnimeVoices,
         order_by='Voice.name.asc()',
-        overlaps="voices",
-        # primaryjoin="foreign(anime_to_voice.c.anime_id) == Anime.id",
-        # secondaryjoin="foreign(anime_to_voice.c.voice_id) == Voice.id",
+        lazy=True
     )
 
+    # Жанры
+    genres: Mapped[ List[ Genre ] ] = relationship(
+        secondary=AnimeGenres,
+        order_by='Genre.name.asc()',
+        lazy=True
+    )
+    
+    # Сезоны
     seasons: Mapped[ List[ AnimeSeason ] ] = relationship(
         "AnimeSeason",
+        foreign_keys=id,
         remote_side="AnimeSeason.anime_id",
-        primaryjoin="foreign(AnimeSeason.anime_id) == Anime.id",
+        primaryjoin="foreign(AnimeSeason.anime_id) == Ranobe.id",
         order_by='AnimeSeason.number.asc()',
-        # lazy="selectin"
+        lazy=True
     )
 
+    # Дополнительные метаданные
     _meta: Mapped[ List[ AnimeMeta ] ] = relationship(
         "AnimeMeta",
         remote_side="AnimeMeta.anime_id",
@@ -279,29 +338,31 @@ class Anime(Base):
     )
 
     @property
+    def fullmeter( self ) -> bool:
+        return self.filename != ''
+
+    @property
     def mono( self ) -> bool:
         return len( self.seasons ) == 1
 
     @property
-    def cover(self) -> Cover|None:
-        if self._cover:
-            return self._cover
-        if len( self.all_covers ) > 0:
-            return self.all_covers[0]
+    def cover(self) -> Image|None:
+        if len( self.covers ) > 0:
+            return self.covers[ 0 ]
         return None
 
-    @property
-    def timestamp( self ) -> int:
-        timestamps = [ self._timestamp.timestamp() ]
-        for season in self.seasons:
-            timestamps.append( season.timestamp )
-        return max( timestamps )
+    # @property
+    # def timestamp( self ) -> int:
+    #     timestamps = [ self._timestamp.timestamp() ]
+    #     for season in self.seasons:
+    #         timestamps.append( season.timestamp )
+    #     return max( timestamps )
 
     @property
     def meta(self) -> Dict[str, Any]:
         result = {}
         for _m in self._meta:
-            result[_m.meta_key] = _m.meta_value
+            result[ _m.meta_key ] = _m.meta_value
         return result
 
     @property
@@ -322,51 +383,49 @@ class Anime(Base):
             return ''
         return os.path.join( *[ ANIME_FS_PATH, *list( filter( None, [ self.path, self.filename ] ) ) ] )
 
-    @property
-    def all_covers(self) -> List[ Cover ]:
-        covers = []
+    # @property
+    # def all_covers(self) -> List[ Image ]:
+    #     covers = []
         
-        if self.seasons:
-            for season in self.seasons:
-                if season.cover:
-                    covers.append( season.cover )
+    #     if self.seasons:
+    #         for season in self.seasons:
+    #             if season.cover:
+    #                 covers.append( season.cover )
         
-        return list(
-            filter(
-                None, list( dict.fromkeys( covers ) )
-            )
-        )
+    #     return list(
+    #         filter(
+    #             None, list( dict.fromkeys( covers ) )
+    #         )
+    #     )
 
-    @property
-    def foldersize(self) -> int:
-        size = 0
+    # @property
+    # def foldersize(self) -> int:
+    #     size = 0
 
-        if int( self.filesize ) > 0:
-            return int( self.filesize )
+    #     if int( self.filesize ) > 0:
+    #         return int( self.filesize )
 
-        if len( self.seasons ) > 0:
-            for season in self.seasons:
-                if int( season.filesize ) > 0:
-                    size += int(season.filesize)
-                elif int( season.foldersize ) > 0:
-                    size += int(season.foldersize)
+    #     if len( self.seasons ) > 0:
+    #         for season in self.seasons:
+    #             if int( season.filesize ) > 0:
+    #                 size += int(season.filesize)
+    #             elif int( season.foldersize ) > 0:
+    #                 size += int(season.foldersize)
         
-        return size
-
-Index("anime_fulltext", Anime.name, Anime.eng_name, mysql_prefix="FULLTEXT")
+    #     return size
 
 
 class AnimeSeason(Base):
-    __tablename__ = "anime_season"
+    __tablename__ = "anime_seasons"
 
     id: Mapped[ int ]       = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     anime_id: Mapped[ int ] = Column(
         "anime_id",
-        Integer,
+        BigInteger,
         index=True
     )
     number: Mapped[ float ] = Column(
@@ -389,7 +448,7 @@ class AnimeSeason(Base):
     )
     cover_id: Mapped[ int ] = Column(
         "cover_id",
-        Integer,
+        BigInteger,
         nullable=True
     )
     # SYSTEM
@@ -415,17 +474,17 @@ class AnimeSeason(Base):
         onupdate=datetime.now
     )
 
-    cover: Mapped[ Cover ] = relationship(
-        "Cover",
+    cover: Mapped[ Image ] = relationship(
+        "Image",
         foreign_keys=cover_id,
-        remote_side="Cover.id",
-        primaryjoin="foreign(AnimeSeason.cover_id) == Cover.id",
+        remote_side="Image.id",
+        primaryjoin="foreign(AnimeSeason.cover_id) == Image.id",
         viewonly=True,
     )
     
     # rels
     studios: Mapped[ List[ Studio ] ] = relationship(
-        secondary=StudiosToAnime,
+        secondary=AnimeStudios,
         order_by='Studio.name.asc()',
         overlaps="studios",
         # primaryjoin="foreign(anime_to_studio.c.anime_id) == Anime.id",
@@ -433,7 +492,7 @@ class AnimeSeason(Base):
     )
 
     genres: Mapped[ List[ Genre ] ] = relationship(
-        secondary=GenresToAnime,
+        secondary=AnimeGenres,
         order_by='Genre.name.asc()',
         overlaps="genres",
         # primaryjoin="foreign(anime_to_genre.c.anime_id) == Anime.id",
@@ -441,7 +500,7 @@ class AnimeSeason(Base):
     )
 
     voices: Mapped[ List[ Voice ] ] = relationship(
-        secondary=VoicesToAnime,
+        secondary=AnimeVoices,
         order_by='Voice.name.asc()',
         overlaps="voices",
         # primaryjoin="foreign(anime_to_voice.c.anime_id) == Anime.id",
@@ -521,16 +580,16 @@ class AnimeSeason(Base):
 
 
 class AnimeSeria(Base):
-    __tablename__ = "anime_seria"
+    __tablename__ = "anime_series"
 
     id: Mapped[ int ]        = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     season_id: Mapped[ int ] = Column(
         "season_id",
-        Integer,
+        BigInteger,
         index=True
     )
     number: Mapped[ float ]   = Column(

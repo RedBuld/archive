@@ -39,7 +39,7 @@ export default function ReaderNavigationSidebar({
                     </button>
                 </div>
                 <Scrollbar
-                    scrollTop={readerNavigationContext.scrollTop}
+                    scrollTop={readerNavigationContext.scrollTop??0}
                     disableTracksWidthCompensation={true}
                     trackYProps={{
                         renderer: (props) => {

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import List, Dict, Any
 from sqlalchemy import Table, Column
-from sqlalchemy import SmallInteger, Integer, Float, String, Text, Boolean, Date, DateTime, Computed, JSON, UniqueConstraint, ForeignKey
+from sqlalchemy import SmallInteger, Integer, BigInteger, Float, String, Text, Boolean, Date, DateTime, Computed, JSON, UniqueConstraint, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from app.db import Base
@@ -43,6 +43,68 @@ MANGA_EXTS = [ '.cbz', '.pdf' ]
 ANIME_EXTS = [ '.avi', '.mkv', '.mp4' ]
 MANGA_IMAGES_EXTS = [ '.jpg', '.jpeg', '.png', '.gif', '.webp' ]
 
+#
+
+
+class AgeRestriction(Base):
+    __tablename__ = "general_age_restrictions"
+
+    id: Mapped[ int ]      = Column(
+        "id",
+        BigInteger,
+        primary_key=True
+    )
+    title: Mapped[ str ]    = Column(
+        "title",
+        Text,
+        default=""
+    )
+
+
+class ReleaseStatus(Base):
+    __tablename__ = "general_release_statuses"
+
+    id: Mapped[ int ]      = Column(
+        "id",
+        BigInteger,
+        primary_key=True
+    )
+    title: Mapped[ str ]    = Column(
+        "title",
+        Text,
+        default=""
+    )
+
+
+class TranslationStatus(Base):
+    __tablename__ = "general_translation_statuses"
+
+    id: Mapped[ int ]      = Column(
+        "id",
+        BigInteger,
+        primary_key=True
+    )
+    title: Mapped[ str ]    = Column(
+        "title",
+        Text,
+        default=""
+    )
+
+
+class TeamRole(Base):
+    __tablename__ = "general_team_roles"
+
+    id: Mapped[ int ]      = Column(
+        "id",
+        BigInteger,
+        primary_key=True
+    )
+    title: Mapped[ str ]    = Column(
+        "title",
+        Text,
+        default=""
+    )
+
 # Base related objects
 
 class Author(Base):
@@ -50,11 +112,16 @@ class Author(Base):
 
     id: Mapped[ int ]      = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     name: Mapped[ str ]    = Column(
         "name",
+        Text,
+        default=""
+    )
+    slug: Mapped[ str ]    = Column(
+        "slug",
         Text,
         default=""
     )
@@ -65,7 +132,7 @@ class Genre(Base):
 
     id: Mapped[ int ]      = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     name: Mapped[ str ]    = Column(
@@ -80,11 +147,16 @@ class Studio(Base):
 
     id: Mapped[ int ]      = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     name: Mapped[ str ]    = Column(
         "name",
+        Text,
+        default=""
+    )
+    slug: Mapped[ str ]    = Column(
+        "slug",
         Text,
         default=""
     )
@@ -95,7 +167,7 @@ class Voice(Base):
 
     id: Mapped[ int ]      = Column(
         "id",
-        Integer,
+        BigInteger,
         primary_key=True
     )
     name: Mapped[ str ]    = Column(
@@ -103,41 +175,33 @@ class Voice(Base):
         Text,
         default=""
     )
-
-
-class Translator(Base):
-    __tablename__ = "general_translators"
-
-    id: Mapped[ int ]      = Column(
-        "id",
-        Integer,
-        primary_key=True
-    )
-    name: Mapped[ str ]    = Column(
-        "name",
+    slug: Mapped[ str ]    = Column(
+        "slug",
         Text,
         default=""
     )
 
 
-class Cover(Base):
-    __tablename__ = "general_covers"
+class Image(Base):
+    __tablename__ = "general_images"
 
-    id: Mapped[ int ]       = Column(
-        "id",
-        Integer,
-        primary_key=True
-    )
-    filename: Mapped[ str ] = Column(
-        "filename",
-        Text,
-        default=""
-    )
-    hash: Mapped[ str ]   = Column(
-        "hash",
-        Text,
-        default=""
-    )
+    id: Mapped[ int ] =\
+        Column(
+            "id",
+            BigInteger,
+            primary_key=True
+        )
+    filename: Mapped[ str ] =\
+        Column(
+            "filename",
+            Text,
+            default=""
+        )
+    
+    def __repr__(
+        self
+    ) -> str:
+        return f'(Image id:{self.id}, filename:{self.filename})'
     
     @property
     def fs_path_full(self) -> str:

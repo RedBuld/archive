@@ -1,0 +1,27 @@
+.slate-editor-content ol, .slate-editor-content ul { padding-left: 1.5rem }
+.slate-editor-content ol { list-style-type: decimal; }
+.slate-editor-content ul { list-style-type: disc; }
+
+.slate-editor-content h1,
+.slate-editor-content h2,
+.slate-editor-content h3,
+.slate-editor-content h4,
+.slate-editor-content h5,
+.slate-editor-content h6 {
+    font-weight: bold;
+}
+
+.slate-editor-content h1 {
+    font-size: 2rem;
+}
+.slate-editor-content h2 {
+    font-size: 1.5rem;
+}
+.slate-editor-content code {
+    padding: 0.5rem;
+    background-color: theme(colors.sky.100);
+}
+.slate-editor-content blockquote {
+    border-left: 0.5rem solid theme(colors.sky.100);
+    padding: 0.5rem 0 0.5rem 0.5rem;
+}

@@ -1,95 +1,44 @@
 import { useEffect, useContext, ReactElement } from 'react'
 import { useSignal, useSignalEffect } from '@preact/signals-react'
 import { useSignalRef } from '@preact/signals-react/utils'
-import { useParams  } from "react-router"
-import { ReaderRanobe, ReaderRanobeNavigationElement, ReaderRanobeChapter } from "@/types/ranobe"
+import { ReaderRanobe, ReaderRanobeChapter } from "@/types/ranobe"
 import { ReaderContext } from '@/contexts/ReaderContext'
-import { getRanobePageLink, getRanobeReaderPageLink } from '@/tools/navigation'
 import { SlateToReact } from '@/tools/reader'
-// import { unpackRanobeChapter } from '@/tools/reader'
-import { loadRanobeReader, loadRanobeReaderChapter, setRanobeLastRead } from '@/api/ranobe'
 import Reader from '@/components/reader/Reader'
-import RanobeReaderNavigationSidebar from '@/components/ranobe/reader/RanobeReaderNavigationSidebar'
 import RanobeReaderSettingsSidebar from '@/components/ranobe/reader/RanobeReaderSettingsSidebar'
 import RanobeReaderPages from '@/components/ranobe/reader/RanobeReaderPages'
 import RanobeReaderFlow from '@/components/ranobe/reader/RanobeReaderFlow'
-import './reader.css'
+import '../../components/ranobe/reader/reader.css'
 
 // unpackRanobeChapter( currentChapter, `${ranobe.name} — ${current}`, readerContext.updateLoadingProgress, parseHTML, () => { console.log('failed') }, controller.current.signal )
 
-export default function RanobeReader()
+export default function DemoPreviewPage()
 {
     const readerContext = useContext( ReaderContext )
-
-    // LOAD
-    // const controller = useRef<AbortController>(new AbortController())
-    // LOAD
-
-    // NAVIGATION DATA
-    const { ranobe_slug, volume_number, chapter_number } = useParams()
-    // NAVIGATION DATA
     
     // READER
     const readerRef = useSignalRef<HTMLDivElement>( null! )
     // 
-    const ranobe = useSignal<ReaderRanobe|null>( null! )
-    const currentNavigation = useSignal<ReaderRanobeNavigationElement|null>()
-    const currentChapterData = useSignal<ReaderRanobeChapter|null>(null!)
+    const ranobe = useSignal<ReaderRanobe|null>({
+        id: 0,
+        name: 'Превью',
+        eng_name: 'Preview',
+        slug: '',
+        timestamp: 0,
+        navigation: []
+    })
+    const currentChapterData = useSignal<ReaderRanobeChapter>({
+        id: 0,
+        number: 0,
+        volume_number: 0,
+        name: 'ДЕМО Превью',
+        eng_name: 'DEMO preview',
+        content: JSON.parse( localStorage.getItem( 'editor_cache' ) ?? '[]' ),
+        timestamp: 0
+    })
     const currentChapterTitle = useSignal<string>('')
     const currentChapterNodes = useSignal<ReactElement[]>([])
     // READER
-
-    async function loadRanobe()
-    {
-        let new_data = await loadRanobeReader( ranobe_slug as string )
-        if( new_data )
-        {
-            ranobe.value = new_data
-        }
-    }
-
-    async function loadChapter()
-    {
-        if ( !ranobe.value || !currentNavigation.value ) return null
-
-        let new_data = await loadRanobeReaderChapter( ranobe.value?.slug, currentNavigation.value?.id )
-        if( new_data )
-        {
-            console.log( new_data )
-            // let nodes = parse( new_data )
-            currentChapterData.value = new_data
-        }
-    }
-
-    //
-
-    function calculateNavigation()
-    {
-        if ( !ranobe.value || !currentNavigation.value ) return null
-
-        let current_chapter_index = ranobe.value.navigation.findIndex( c => c.volume_number == readerContext.currentVolumeNumber.value && c.number == readerContext.currentChapterNumber.value )
-
-        let next_chapter_index = current_chapter_index+1
-        let next_chapter = null
-
-        let prev_chapter_index = current_chapter_index-1
-        let prev_chapter = null
-
-        if( next_chapter_index <= ranobe.value.navigation.length-1 )
-        {
-            next_chapter = ranobe.value.navigation[ next_chapter_index ]
-        }
-
-        if( prev_chapter_index >= 0 )
-        {
-            prev_chapter = ranobe.value.navigation[ prev_chapter_index ]
-        }
-
-        readerContext.setNavigationPrevLink( prev_chapter ? getRanobeReaderPageLink( ranobe.value.slug, prev_chapter.volume_number, prev_chapter.number ) : '' )
-        readerContext.setNavigationNextLink( next_chapter ? getRanobeReaderPageLink( ranobe.value.slug, next_chapter.volume_number, next_chapter.number ) : '' )
-    }
-
-    // 
 
     function computeNodes()
     {
@@ -114,7 +63,7 @@ export default function RanobeReader()
 
     useSignalEffect(
         () => {
-            readerContext.setCurrentProductLink( ranobe.value ? getRanobePageLink( ranobe.value.slug ) : '' )
+            readerContext.setCurrentProductLink( '' )
             readerContext.setCurrentProductName( ranobe.value ? ranobe.value.name : '' )
             readerContext.setCurrentProductEngName( ranobe.value ? ranobe.value.eng_name : '' )
         }
@@ -140,10 +89,6 @@ export default function RanobeReader()
                 let title = `Читать ранобэ ${ranobe.value.name} — ${current} — Архив`
                 document.title = title
 
-                calculateNavigation()
-
-                setRanobeLastRead( ranobe.value.id, currentChapterData.value.volume_number, currentChapterData.value.number )
-
                 currentChapterTitle.value = chapterTitle
                 computeNodes()
             }
@@ -153,43 +98,21 @@ export default function RanobeReader()
 
     useEffect(
         () => {
-            loadChapter()
+            window.addEventListener('storage', (ev: StorageEvent) => {
+                if( ev.key == 'editor_cache' )
+                {
+                    currentChapterData.value = { ...currentChapterData.value, 'content': JSON.parse( ev.newValue??'[]' ) }
+                }
+            })
         },
-        [ currentNavigation.value ]
-    )
-    
-    useEffect(
-        () => {
-            currentNavigation.value = ranobe.value?.navigation?.filter(
-                (c) => c.volume_number == readerContext.currentVolumeNumber.value && c.number == readerContext.currentChapterNumber.value
-            ).pop()
-        },
-        [ ranobe.value, readerContext.currentVolumeNumber.value, readerContext.currentChapterNumber.value]
-    )
-
-    useEffect(
-        () => {
-            if( volume_number && chapter_number )
-            {
-                readerContext.setCurrentVolumeNumber( parseFloat( volume_number ) )
-                readerContext.setCurrentChapterNumber( parseFloat( chapter_number ) )
-            }
-        },
-        [ volume_number, chapter_number ]
-    )
-
-    useEffect(
-        () => {
-            loadRanobe()
-        },
-        [ ranobe_slug ]
+        []
     )
 
     console.log('RanobeReader rerender')
 
     return (
         <Reader
-            navigation={<RanobeReaderNavigationSidebar ranobe={ranobe} />}
+            navigation={<></>}
             settings={<RanobeReaderSettingsSidebar/>}
         >
             { currentChapterData ? (

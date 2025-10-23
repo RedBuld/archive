@@ -3,8 +3,10 @@
     font-size: var(--reader-font-size,16px);
     line-height: var(--reader-line-height,1.4);
     margin: var(--reader-line-gap,8px) 0px;
-    text-align: var(--reader-text-align,'start');
     text-indent: var(--reader-text-indent,'0em');
+}
+.ranobe-reader-container .ranobe-reader-content {
+    text-align: var(--reader-text-align,'start');
 }
 .ranobe-reader-container .ranobe-reader-content header,
 .ranobe-reader-container .ranobe-reader-content header * {

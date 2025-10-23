@@ -1,5 +1,5 @@
 import { Cover, Meta, Filterable, UnpackedImage } from "@/types/general"
-import { ReaderChapter, ReaderVolume, ReaderSettings } from "@/types/reader"
+// import { ReaderChapter, ReaderVolume, ReaderSettings } from "@/types/reader"
 
 export interface Ranobe extends Filterable
 {
@@ -76,20 +76,70 @@ export interface ReaderRanobe
     name: string
     eng_name: string
     slug: string
+    timestamp: number
+    // 
+    navigation: ReaderRanobeNavigationElement[]
+}
+
+export interface ReaderRanobeNavigationElement
+{
+    id: number
+    number: number
+    volume_number: number
+    name: string
+    eng_name: string
+}
+
+
+export interface ReaderRanobeChapter
+{
+    id: number
+    number: number
+    volume_number: number
+    name: string
+    eng_name: string
+    content: ReaderRanobeChapterElement[]
     // 
     timestamp: number
-    chapters: ReaderRanobeChapter[]
 }
 
-export interface ReaderRanobeVolume extends ReaderVolume
+const NodeTypes = [
+    "paragraph",
+    "heading-one",
+    "heading-two",
+    "heading-three",
+    "heading-four",
+    "heading-five",
+    "heading-six",
+    "block-quote",
+    "bulleted-list",
+    "numbered-list",
+    "list-item",
+    "table",
+    "table-row",
+    "table-cell",
+    "link",
+    "image",
+    "code-block"
+]
+
+export interface ReaderRanobeChapterElement extends Object
 {
-    chapters: ReaderRanobeChapter[]
+    type: (typeof NodeTypes)[number]
+    children: ReaderRanobeChapterElement[]
+    bold?: boolean
+    align?: string
+    italic?: boolean
+    underline?: boolean
+    strikethrough?: boolean
 }
 
-export interface ReaderRanobeChapter extends ReaderChapter
+export interface ReaderRanobeChapterText extends Object
 {
-    filesize: number
-    download_path: string
+    text: string
+    bold?: boolean
+    align?: string
+    italic?: boolean
+    underline?: boolean
+    strikethrough?: boolean
 }
-
-export interface ReaderRanobeSettings extends ReaderSettings {}

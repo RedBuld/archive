@@ -45,3 +45,9 @@ async def endpoint_single( ranobe_slug: str ):
 async def endpoint_reader( ranobe_slug: str ):
     response = await get_reader( ranobe_slug )
     return PJSONResponse( response )
+
+
+@ranobe.get( '/{ranobe_slug}/reader/chapter/{chapter_id}' )
+async def endpoint_reader( chapter_id: int ):
+    response = await get_reader_chapter_content( chapter_id )
+    return PJSONResponse( response )

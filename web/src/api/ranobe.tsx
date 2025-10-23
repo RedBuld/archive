@@ -3,12 +3,17 @@ import {
     Ranobe,
     RanobeSingle,
     ReaderRanobe,
+    ReaderRanobeChapter,
 } from "@/types/ranobe"
 import { loadData, setCached, getCached } from "@/api/general"
 
 // 
 
-export async function loadRanobeList( offset: number, limit: number, filters: Filters ): Promise<Ranobe[]|null>
+export async function loadRanobeList(
+    offset: number,
+    limit: number,
+    filters: Filters
+): Promise<Ranobe[]|null>
 {
     let url = '/ranobe/list'
     let query: string[] = [
@@ -64,9 +69,11 @@ export async function loadRanobeFilters(): Promise<Filters|null>
 
 // MANGA SINGLE
 
-export async function loadRanobeSingle( path: string ): Promise<RanobeSingle|null>
+export async function loadRanobeSingle(
+    ranobe_slug: string
+): Promise<RanobeSingle|null>
 {
-    return loadData<RanobeSingle>( `/ranobe/${ path }` )
+    return loadData<RanobeSingle>( `/ranobe/${ranobe_slug}` )
         .then(
             (response) => {
                 return response
@@ -82,9 +89,30 @@ export async function loadRanobeSingle( path: string ): Promise<RanobeSingle|nul
 
 // READER
 
-export async function loadReaderRanobe(ranobe_slug: string): Promise<ReaderRanobe|null>
+export async function loadRanobeReader(
+    ranobe_slug: string
+): Promise<ReaderRanobe|null>
 {
     return loadData<ReaderRanobe>( `/ranobe/${ranobe_slug}/reader` )
+        .then(
+            (response) => {
+                return response
+            }
+        )
+        .catch(
+            (error) => {
+                console.error(error)
+                return null
+            }
+        )
+}
+
+export async function loadRanobeReaderChapter(
+    ranobe_slug: string,
+    chapter_id: number
+): Promise<ReaderRanobeChapter|null>
+{
+    return loadData<ReaderRanobeChapter>( `/ranobe/${ranobe_slug}/reader/chapter/${chapter_id}` )
         .then(
             (response) => {
                 return response

@@ -10,228 +10,348 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Mapped
 from app.db import DB
 from app.db import Base
-from .core import *
 
+from app.models.shared import *
+from app.models.teams import Team
 #
 
-AuthorsToManga = Table(
-    "r_authors_to_manga",
+# Авторы
+MangaAuthors = Table(
+    "_rel_mangas_authors",
     Base.metadata,
     Column(
         "manga_id",
-        Integer,
-        ForeignKey('manga.id', ondelete="cascade"),
+        BigInteger,
+        ForeignKey("mangas.id", ondelete="cascade"),
         index=True
     ),
     Column(
         "author_id",
-        Integer,
+        BigInteger,
         ForeignKey( "general_authors.id", ondelete="cascade" ),
     )
 )
 
-
-GenresToManga = Table(
-    "r_genres_to_manga",
+# Художники
+MangaArtists = Table(
+    "_rel_mangas_artists",
     Base.metadata,
     Column(
         "manga_id",
-        Integer,
-        ForeignKey('manga.id', ondelete="cascade"),
+        BigInteger,
+        ForeignKey("mangas.id", ondelete="cascade"),
+        index=True
+    ),
+    Column(
+        "artist_id",
+        BigInteger,
+        ForeignKey( "general_authors.id", ondelete="cascade" ),
+    )
+)
+
+# Жанры
+MangaGenres = Table(
+    "_rel_mangas_genres",
+    Base.metadata,
+    Column(
+        "manga_id",
+        BigInteger,
+        ForeignKey("mangas.id", ondelete="cascade"),
         index=True
     ),
     Column(
         "genre_id",
-        Integer,
+        BigInteger,
         ForeignKey( "general_genres.id", ondelete="cascade" ),
     )
 )
+
+# Обложки
+class MangaCovers(Base):
+    __tablename__ = "_rel_mangas_covers"
+    __mapper_args__ = {
+        "primary_key": ["manga_id", "volume_id", "image_id"]
+    }
+
+    manga_id: Mapped[ int ] =\
+        Column(
+            "manga_id",
+            BigInteger,
+            ForeignKey("mangas.id", ondelete="cascade"),
+            nullable=True,
+            index=True
+        )
+    volume_id: Mapped[ int ] =\
+        Column(
+            "volume_id",
+            BigInteger,
+            ForeignKey('mangas_volumes.id', ondelete="cascade"),
+            nullable=True,
+            index=True
+        )
+    image_id: Mapped[ int ] =\
+        Column(
+            "image_id",
+            BigInteger,
+            ForeignKey( "general_images.id", ondelete="cascade" ),
+            index=True
+        )
+    index: Mapped[ int ] =\
+        Column(
+            "index",
+            Integer
+        )
+    role: Mapped[ str ] =\
+        Column(
+            "role",
+            String(10),
+            index=True
+        )
+
+# 
+
+# Ветки перевода от команд и отдельных пользователей
+class MangaTranslationBranche(Base):
+    __tablename__ = "mangas_translation_branches"
+    __table_args__ = (
+        Index("rtb_mangas_idx", "manga_id"),
+        Index("rtb_translator_idx", "manga_id", "team_id"),
+    )
+
+    id: Mapped[ int ] =\
+        Column(
+            "id",
+            BigInteger,
+            primary_key=True
+        )
+    manga_id: Mapped[ int ] =\
+        Column(
+            "manga_id",
+            BigInteger,
+            ForeignKey( "mangas.id", ondelete="cascade")
+        )
+    team_id: Mapped[ int ] =\
+        Column(
+            "team_id",
+            BigInteger,
+            ForeignKey( "teams.id", ondelete="cascade" )
+        )
+
+    team: Mapped[ Team ] = relationship(
+        "Team",
+        foreign_keys=team_id,
+        remote_side="Team.id",
+        primaryjoin="foreign(MangaTranslationBranche.team_id) == Team.id",
+        lazy='noload',
+        viewonly=True
+    )
+    
+    def __repr__(
+        self
+    ) -> str:
+        return f'(Branch id:{self.id}, manga_id:{self.manga_id}, team_id:{self.team_id})'
 
 
 #
 
 
 class MangaMeta(Base):
-    __tablename__ = "manga_meta"
+    __tablename__ = "mangas_meta"
 
-    id: Mapped[ int ]         = Column(
-        "id",
-        Integer,
-        primary_key=True
-    )
-    manga_id: Mapped[ int ]   = Column(
-        "manga_id",
-        Integer,
-        nullable=True,
-        index=True
-    )
-    meta_key: Mapped[ str ]   = Column(
-        "meta_key",
-        String(20),
-        default=""
-    )
-    meta_value: Mapped[ str ] = Column(
-        "meta_value",
-        Text,
-        default=""
-    )
+    id: Mapped[ int ] =\
+        Column(
+            "id",
+            BigInteger,
+            primary_key=True
+        )
+    manga_id: Mapped[ int ] =\
+        Column(
+            "manga_id",
+            BigInteger,
+            nullable=True,
+            index=True
+        )
+    meta_key: Mapped[ str ] =\
+        Column(
+            "meta_key",
+            String(20),
+            default=""
+        )
+    meta_value: Mapped[ str ] =\
+        Column(
+            "meta_value",
+            Text,
+            default=""
+        )
 
 
 class MangaVolumeMeta(Base):
-    __tablename__ = "manga_volume_meta"
+    __tablename__ = "mangas_volumes_meta"
 
-    id: Mapped[ int ]         = Column(
-        "id",
-        Integer,
-        primary_key=True
-    )
-    volume_id: Mapped[ int ]  = Column(
-        "volume_id",
-        Integer,
-        nullable=True,
-        index=True
-    )
-    meta_key: Mapped[ str ]   = Column(
-        "meta_key",
-        String(20),
-        default=""
-    )
-    meta_value: Mapped[ str ] = Column(
-        "meta_value",
-        Text,
-        default=""
-    )
-
-
-class MangaChapterMeta(Base):
-    __tablename__ = "manga_chapter_meta"
-
-    id: Mapped[ int ]         = Column(
-        "id",
-        Integer,
-        primary_key=True
-    )
-    chapter_id: Mapped[ int ] = Column(
-        "chapter_id",
-        Integer,
-        nullable=True,
-        index=True
-    )
-    meta_key: Mapped[ str ]   = Column(
-        "meta_key",
-        String(20),
-        default=""
-    )
-    meta_value: Mapped[ str ] = Column(
-        "meta_value",
-        Text,
-        default=""
-    )
+    id: Mapped[ int ] =\
+        Column(
+            "id",
+            BigInteger,
+            primary_key=True
+        )
+    volume_id: Mapped[ int ] =\
+        Column(
+            "volume_id",
+            BigInteger,
+            nullable=True,
+            index=True
+        )
+    meta_key: Mapped[ str ] =\
+        Column(
+            "meta_key",
+            String(20),
+            default=""
+        )
+    meta_value: Mapped[ str ] =\
+        Column(
+            "meta_value",
+            Text,
+            default=""
+        )
 
 
 #
 
 
 class Manga(Base):
-    __tablename__ = "manga"
-
-    id: Mapped[ int ]              = Column(
-        "id",
-        Integer,
-        primary_key=True
-    )
-    name: Mapped[ str ]            = Column(
-        "name",
-        Text,
-        default=""
-    )
-    eng_name: Mapped[ str ]         = Column(
-        "eng_name",
-        Text,
-        default=""
-    )
-    slug: Mapped[ str ]            = Column(
-        "slug",
-        Text,
-        default=""
-    )
-    cover_id: Mapped[ int ]        = Column(
-        "cover_id",
-        Integer,
-        nullable=True
-    )
-    mature: Mapped[ bool ]         = Column(
-        "mature",
-        Boolean,
-        default=False
-    )
-    # Meta
-    status: Mapped[ str ]          = Column(
-        "status",
-        String(50),
-        default=""
-    )
-    # SYSTEM
-    path: Mapped[ str ]            = Column(
-        "path",
-        Text,
-        default=""
-    )
-    _timestamp: Mapped[ datetime ] = Column(
-        "updated",
-        TIMESTAMP,
-        default=datetime.now,
-        onupdate=datetime.now
+    __tablename__ = "mangas"
+    __table_args__ = (
+        Index("m_title_idx", "title", mysql_length=512),
+        Index("m_rus_title_idx", "rus_title", mysql_length=512),
     )
 
-    _cover: Mapped[ Cover ] = relationship(
-        "Cover",
-        foreign_keys=cover_id,
-        remote_side="Cover.id",
-        primaryjoin="foreign(Manga.cover_id) == Cover.id",
+    id: Mapped[ int ] =\
+        Column(
+            "id",
+            BigInteger,
+            primary_key=True
+        )
+    title: Mapped[ str ] =\
+        Column(
+            "title",
+            Text,
+            default=""
+        )
+    rus_title: Mapped[ str ] =\
+        Column(
+            "rus_title",
+            Text,
+            default=""
+        )
+    slug: Mapped[ str ] =\
+        Column(
+            "slug",
+            Text,
+            default=""
+        )
+    # META
+    age_restriction: Mapped[ int ] =\
+        Column(
+            "age_restriction",
+            BigInteger,
+            ForeignKey( "general_age_restrictions.id", ondelete="SET NULL" ),
+            nullable=True
+        )
+    release_status: Mapped[ str ] =\
+        Column(
+            "release_status",
+            BigInteger,
+            ForeignKey( "general_release_statuses.id", ondelete="SET NULL" ),
+            nullable=True
+        )
+    translation_status: Mapped[ str ] =\
+        Column(
+            "translation_status",
+            BigInteger,
+            ForeignKey( "general_translation_statuses.id", ondelete="SET NULL" ),
+            nullable=True
+        )
+    
+    # 
+
+    # Обложки
+    covers: Mapped[ List[ Image ] ] = relationship(
+        "Image",
+        secondary=MangaCovers.__tablename__,
+        primaryjoin="and_( foreign(MangaCovers.manga_id) == Manga.id, MangaCovers.role=='cover')",
+        secondaryjoin="foreign(MangaCovers.image_id) == Image.id",
+        order_by='MangaCovers.index.asc()',
+        lazy='noload',
+        viewonly=True,
+    )
+    background: Mapped[ Image ] = relationship(
+        "Image",
+        secondary=MangaCovers.__tablename__,
+        primaryjoin="and_( foreign(MangaCovers.manga_id) == Manga.id, MangaCovers.role=='bg')",
+        secondaryjoin="foreign(MangaCovers.image_id) == Image.id",
+        order_by='MangaCovers.index.asc()',
+        lazy='noload',
         viewonly=True,
     )
 
-    # rels
+    # Авторы
     authors: Mapped[ List[ Author ] ] = relationship(
-        secondary=AuthorsToManga,
-        order_by='Author.name.asc()'
+        secondary=MangaAuthors,
+        order_by='Author.name.asc()',
+        lazy='noload'
     )
 
+    # Художники
+    artists: Mapped[ List[ Author ] ] = relationship(
+        secondary=MangaArtists,
+        order_by='Author.name.asc()',
+        lazy='noload'
+    )
+
+    # Жанры
     genres: Mapped[ List[ Genre ] ] = relationship(
-        secondary=GenresToManga,
-        order_by='Genre.name.asc()'
+        secondary=MangaGenres,
+        order_by='Genre.name.asc()',
+        lazy='noload'
+    )
+
+    # Ветки перевода
+    branches: Mapped[ List[ MangaTranslationBranche ] ] = relationship(
+        "MangaTranslationBranche",
+        foreign_keys=id,
+        remote_side="MangaTranslationBranche.manga_id",
+        primaryjoin="foreign(MangaTranslationBranche.manga_id) == Manga.id",
+        order_by='MangaTranslationBranche.id.asc()',
+        lazy='noload'
     )
     
+    # Тома
     volumes: Mapped[ List[ MangaVolume ] ] = relationship(
         "MangaVolume",
         foreign_keys=id,
         remote_side="MangaVolume.manga_id",
         primaryjoin="foreign(MangaVolume.manga_id) == Manga.id",
         order_by='MangaVolume.number.asc()',
-        # lazy="selectin"
+        lazy='noload'
     )
 
     _meta: Mapped[ List[ MangaMeta ] ] = relationship(
         "MangaMeta",
         remote_side="MangaMeta.manga_id",
         primaryjoin="foreign(MangaMeta.manga_id) == Manga.id",
+        lazy='noload'
     )
+    
+    def __repr__(
+        self
+    ) -> str:
+        return f'(Manga id:{self.id}, title:{self.title})'
 
     @property
-    def cover(self) -> Cover|None:
-        if self._cover:
-            return self._cover
-        if len( self.all_covers ) > 0:
-            return self.all_covers[0]
+    def cover(self) -> Image|None:
+        if len( self.covers ) > 0:
+            return self.covers[ 0 ]
         return None
-
-    @property
-    def timestamp( self ) -> int:
-        timestamps = [ self._timestamp.timestamp() ]
-        for volume in self.volumes:
-            timestamps.append( volume.timestamp )
-        return max( timestamps )
 
     @property
     def meta(self) -> Dict[str, Any]:
@@ -240,116 +360,65 @@ class Manga(Base):
             result[_m.meta_key] = _m.meta_value
         return result
 
-    @property
-    def all_covers(self) -> List[ Cover ]:
-        covers = []
-
-        if self.volumes:
-            for volume in self.volumes:
-                if volume.cover:
-                    covers.append( volume.cover )
-
-        return list(
-            filter(
-                None, list( dict.fromkeys( covers ) )
-            )
-        )
-
-    @property
-    def foldersize(self) -> int:
-        size = 0
-
-        if len( self.volumes ) > 0:
-            for volume in self.volumes:
-                if int( volume.filesize ) > 0:
-                    size += int( volume.filesize )
-                if int( volume.foldersize ) > 0:
-                    size += int( volume.foldersize )
-
-        return size
-
-Index("manga_fulltext", Manga.name, Manga.eng_name, mysql_prefix="FULLTEXT")
 
 class MangaVolume(Base):
-    __tablename__ = "manga_volume"
+    __tablename__ = "mangas_volumes"
 
-    id: Mapped[ int ]         = Column(
-        "id",
-        Integer,
-        primary_key=True
-    )
-    manga_id: Mapped[ int ]   = Column(
-        "manga_id",
-        Integer,
-        index=True
-    )
-    number: Mapped[ float ]   = Column(
-        "number",
-        Float
-    )
-    name: Mapped[ str ]       = Column(
-        "name",
-        Text,
-        default=""
-    )
-    eng_name: Mapped[ str ]    = Column(
-        "eng_name",
-        Text,
-        default=""
-    )
-    slug: Mapped[ str ]       = Column(
-        "slug",
-        Text,
-        default=""
-    )
-    cover_id: Mapped[ int ]   = Column(
-        "cover_id",
-        Integer,
-        nullable=True
-    )
-    # Meta
-    status: Mapped[ str ]     = Column(
-        "status",
-        Text,
-        default=""
-    )
-    # SYSTEM
-    path: Mapped[ str ]       = Column(
-        "path",
-        Text,
-        default=""
-    )
-    filename: Mapped[ str ]   = Column(
-        "filename",
-        Text,
-        default=""
-    )
-    filesize: Mapped[ int ]   = Column(
-        "filesize",
-        Text,
-        default="0"
-    )
-    _timestamp: Mapped[ datetime ] = Column(
-        "updated",
-        TIMESTAMP,
-        default=datetime.now,
-        onupdate=datetime.now
-    )
+    id: Mapped[ int ] =\
+        Column(
+            "id",
+            BigInteger,
+            primary_key=True
+        )
+    manga_id: Mapped[ int ] =\
+        Column(
+            "manga_id",
+            BigInteger,
+            index=True
+        )
+    number: Mapped[ float ] =\
+        Column(
+            "number",
+            Float
+        )
+    title: Mapped[ str ] =\
+        Column(
+            "title",
+            Text,
+            default=""
+        )
+    # META
+    release_status: Mapped[ str ] =\
+        Column(
+            "release_status",
+            BigInteger,
+            ForeignKey( "general_release_statuses.id", ondelete="SET NULL" ),
+            nullable=True
+        )
+    translation_status: Mapped[ str ] =\
+        Column(
+            "translation_status",
+            BigInteger,
+            ForeignKey( "general_translation_statuses.id", ondelete="SET NULL" ),
+            nullable=True
+        )
 
     manga: Mapped[ Manga ] = relationship(
         "Manga",
         foreign_keys=manga_id,
         remote_side="Manga.id",
         primaryjoin="foreign(MangaVolume.manga_id) == Manga.id",
-        # lazy='select',
+        lazy='noload',
         viewonly=True,
     )
 
-    cover: Mapped[ Cover ] = relationship(
-        "Cover",
-        foreign_keys=cover_id,
-        remote_side="Cover.id",
-        primaryjoin="foreign(MangaVolume.cover_id) == Cover.id",
+    cover: Mapped[ Image ] = relationship(
+        "Image",
+        secondary=MangaCovers.__tablename__,
+        primaryjoin="and_( foreign(MangaCovers.manga_id) == Manga.id, foreign(MangaCovers.volume_id) == MangaVolume.id, MangaCovers.role=='cover')",
+        secondaryjoin="foreign(MangaCovers.image_id) == Image.id",
+        order_by='MangaCovers.index.asc()',
+        lazy='noload',
         viewonly=True,
     )
     
@@ -359,102 +428,56 @@ class MangaVolume(Base):
         remote_side="MangaChapter.volume_id",
         primaryjoin="foreign(MangaChapter.volume_id) == MangaVolume.id",
         order_by='MangaChapter.number.asc()',
-        # lazy="selectin"
+        lazy='noload'
     )
 
     _meta: Mapped[ List[ MangaVolumeMeta ] ] = relationship(
         "MangaVolumeMeta",
         remote_side="MangaVolumeMeta.volume_id",
         primaryjoin="foreign(MangaVolumeMeta.volume_id) == MangaVolume.id",
+        lazy='noload'
     )
-
-    @property
-    def timestamp( self ) -> int:
-        timestamps = [ self._timestamp.timestamp() ]
-        for chapter in self.chapters:
-            timestamps.append( chapter.timestamp )
-        return max( timestamps )
+    
+    def __repr__(
+        self
+    ) -> str:
+        return f'(MangaVolume id:{self.id}, manga:{self.manga_id}, title:{self.title})'
 
     @property
     def meta(self) -> Dict[str, Any]:
         result = {}
         for _m in self._meta:
-            result[_m.meta_key] = _m.meta_value
+            result[ _m.meta_key ] = _m.meta_value
         return result
 
-    @property
-    def ext(self) -> str:
-        if not self.filename:
-            return ''
-        return self.filename.split('.')[-1]
-    
-    @property
-    def download_path(self) -> str:
-        if not self.filename:
-            return ''
-        return '/'.join( [ MANGA_WEB_PATH, *list( filter( None, [ self.manga.path, self.path, self.filename ] ) ) ] )
-    
-    @property
-    def fs_path(self) -> str:
-        if not self.filename:
-            return ''
-        return os.path.join( *[ MANGA_FS_PATH, *list( filter( None, [ self.manga.path, self.path, self.filename ] ) ) ] )
-
-    @property
-    def foldersize(self) -> int:
-        size = 0
-
-        if len( self.chapters ) > 0:
-            for chapter in self.chapters:
-                if int( chapter.filesize ) > 0:
-                    size += int( chapter.filesize )
-        
-        return size
 
 class MangaChapter(Base):
-    __tablename__ = "manga_chapter"
+    __tablename__ = "mangas_chapters"
 
-    id: Mapped[ int ]        = Column(
-        "id",
-        Integer,
-        primary_key=True
-    )
-    volume_id: Mapped[ int ] = Column(
-        "volume_id",
-        Integer,
-        index=True
-    )
-    number: Mapped[ float ]  = Column(
-        "number",
-        Float
-    )
-    name: Mapped[ str ]      = Column(
-        "name",
-        Text,
-        default=""
-    )
-    eng_name: Mapped[ str ]   = Column(
-        "eng_name",
-        Text,
-        default=""
-    )
-    # SYSTEM
-    filename: Mapped[ str ]  = Column(
-        "filename",
-        Text,
-        default=""
-    )
-    filesize: Mapped[ int ]  = Column(
-        "filesize",
-        Text,
-        default="0"
-    )
-    _timestamp: Mapped[ datetime ] = Column(
-        "updated",
-        TIMESTAMP,
-        default=datetime.now,
-        onupdate=datetime.now
-    )
+    id: Mapped[ int ] =\
+        Column(
+            "id",
+            BigInteger,
+            primary_key=True
+        )
+    volume_id: Mapped[ int ] =\
+        Column(
+            "volume_id",
+            BigInteger,
+            ForeignKey( "mangas_volumes.id", ondelete="cascade" ),
+            index=True
+        )
+    number: Mapped[ float ] =\
+        Column(
+            "number",
+            Float
+        )
+    title: Mapped[ str ] =\
+        Column(
+            "title",
+            Text,
+            default=""
+        )
 
     # rels
     volume: Mapped[ MangaVolume ] = relationship(
@@ -462,45 +485,64 @@ class MangaChapter(Base):
         foreign_keys=volume_id,
         remote_side="MangaVolume.id",
         primaryjoin="foreign(MangaChapter.volume_id) == MangaVolume.id",
-        lazy='select',
+        lazy='noload',
         viewonly=True,
     )
-
-    _meta: Mapped[ List[ MangaChapterMeta ] ] = relationship(
-        "MangaChapterMeta",
-        remote_side="MangaChapterMeta.chapter_id",
-        primaryjoin="foreign(MangaChapterMeta.chapter_id) == MangaChapter.id",
+    
+    branches: Mapped[ List[ MangaChapterBranch ] ] = relationship(
+        "MangaChapterBranch",
+        foreign_keys=id,
+        remote_side="MangaChapterBranch.chapter_id",
+        primaryjoin="foreign(MangaChapterBranch.chapter_id) == MangaChapter.id",
+        order_by='MangaChapterBranch.id.asc()',
+        lazy='noload'
     )
 
-    @property
-    def timestamp( self ) -> int:
-        return self._timestamp.timestamp()
-
-    @property
-    def meta(self) -> Dict[str, Any]:
-        result = {}
-        for _m in self._meta:
-            result[_m.meta_key] = _m.meta_value
-        return result
+    def __repr__(
+        self
+    ) -> str:
+        return f'(MangaChapter id:{self.id}, volume:{self.volume_number}, number:{self.number}, title:{self.title})'
     
     @property
     def volume_number(self) -> float:
-        return self.volume.number
+        return self.volume.number if self.volume else 0
 
-    @property
-    def ext(self) -> str:
-        if not self.filename:
-            return ''
-        return self.filename.split('.')[-1]
 
-    @property
-    def download_path(self) -> str:
-        if not self.filename:
-            return ''
-        return '/'.join( [ MANGA_WEB_PATH, *list( filter( None, [ self.volume.manga.path, self.volume.path, self.filename ] ) ) ] )
+class MangaChapterBranch(Base):
+    __tablename__ = "mangas_chapters_datas"
 
-    @property
-    def fs_path(self) -> str:
-        if not self.filename:
-            return ''
-        return os.path.join( *[ MANGA_FS_PATH, *list( filter( None, [ self.volume.manga.path, self.volume.path, self.filename ] ) ) ] )
+
+    id: Mapped[ int ] =\
+        Column(
+            "id",
+            BigInteger,
+            primary_key=True
+        )
+    branch_id: Mapped[ int ] =\
+        Column(
+            "branch_id",
+            BigInteger,
+            ForeignKey( "mangas_translation_branches.id", ondelete="cascade" ),
+            index=True
+        )
+    chapter_id: Mapped[ int ] =\
+        Column(
+            "chapter_id",
+            BigInteger,
+            ForeignKey( "mangas_chapters.id", ondelete="cascade" ),
+            index=True
+        )
+
+    branch: Mapped[ MangaTranslationBranche ] = relationship(
+        "MangaTranslationBranche",
+        foreign_keys=branch_id,
+        remote_side="MangaTranslationBranche.id",
+        primaryjoin="foreign(MangaChapterBranch.branch_id) == MangaTranslationBranche.id",
+        lazy='noload',
+        viewonly=True,
+    )
+
+    def __repr__(
+        self
+    ) -> str:
+        return f'(MangaChapterBranch chapter_id:{self.chapter_id}, branch:{self.branch_id}, team:{self.branch.team.name})'

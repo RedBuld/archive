@@ -1,5 +1,6 @@
 import orjson
 from sqlalchemy import select, func, or_, and_, case, asc, desc, text
+from sqlalchemy.orm import joinedload
 from typing import Dict, List, Any
 from app import models
 from app import schemas
@@ -260,58 +261,97 @@ async def get_single(
     return result
 
 
-async def get_reader(
+async def get_reader_navigation(
     manga_slug: str
 ) -> str:
 
-    cache_key = MANGA_CACHE_KEYS['reader'].format(manga_slug)
-    result = await RD.get( cache_key )
+    # cache_key = MANGA_CACHE_KEYS['reader'].format(manga_slug)
+    # result = await RD.get( cache_key )
 
-    if not result:
+    # if not result:
         # print(f'manga {manga_slug} reader not cached')
 
         session = DB()
-
-        manga = session.execute( 
+        
+        manga = session.execute(
             select(
                 models.Manga
-            )\
-            .where(
+            )
+            .filter(
                 models.Manga.slug==manga_slug
             )
-        ).scalars().one_or_none()
-
-        result = '{}'
+        ).scalar_one_or_none()
 
         if manga:
-            _manga = schemas.MangaReader.model_validate( manga )
 
-            chapters_query = session.execute( 
+            chapters = session.execute(
                 select(
                     models.MangaChapter
-                )\
-                .join(
-                    models.MangaVolume,
-                    models.MangaVolume.id==models.MangaChapter.volume_id
-                )\
-                .where(
-                    models.MangaVolume.manga_id==manga.id
-                )\
-                .order_by(
-                    models.MangaVolume.number.asc(),
-                    models.MangaChapter.number.asc()
                 )
-            )
-            chapters = chapters_query.scalars().all()
+                .join(
+                    models.MangaVolume, models.MangaVolume.id==models.MangaChapter.volume_id
+                )
+                .options(
+                    joinedload(
+                        models.MangaChapter.branches
+                    ).options(
+                        joinedload(
+                            models.MangaChapterBranch.branch
+                        ).options(
+                            joinedload(
+                                models.MangaTranslationBranche.team
+                            )
+                        )
+                    ),
+                    # joinedload(
+                    #     models.Manga.volumes
+                    # ).options(
+                    #     joinedload(
+                    #         models.MangaVolume.chapters
+                    #     )
+                    # ),
+                )
+                .filter(
+                    models.MangaVolume.manga_id==manga.id
+                )
+                .order_by(
+                    models.MangaVolume.number,
+                    models.MangaChapter.number
+                )
+            ).unique().scalars().all()
 
-            if chapters:
-                _manga.chapters = [ schemas.MangaReaderChapter.model_validate( chapter ) for chapter in chapters ]
+        print( chapters )
+        # result = '{}'
 
-            result = _manga.model_dump_json()
-            await RD.set( cache_key, result, 3600 )
-        else:
-            result = '{}'
+        # if manga:
+        #     _manga = schemas.MangaReader.model_validate( manga )
+
+        #     chapters_query = session.execute( 
+        #         select(
+        #             models.MangaChapter
+        #         )\
+        #         .join(
+        #             models.MangaVolume,
+        #             models.MangaVolume.id==models.MangaChapter.volume_id
+        #         )\
+        #         .where(
+        #             models.MangaVolume.manga_id==manga.id
+        #         )\
+        #         .order_by(
+        #             models.MangaVolume.number.asc(),
+        #             models.MangaChapter.number.asc()
+        #         )
+        #     )
+        #     chapters = chapters_query.scalars().all()
+
+        #     if chapters:
+        #         _manga.chapters = [ schemas.MangaReaderChapter.model_validate( chapter ) for chapter in chapters ]
+
+        #     result = _manga.model_dump_json()
+        #     await RD.set( cache_key, result, 3600 )
+        # else:
+        #     result = '{}'
 
         session.close()
 
-    return result
+    # return result

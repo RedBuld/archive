@@ -30,45 +30,45 @@ export const TABLE_CHILDS_ELEMENTS: NODES_DEF = {
 }
 
 export const TITLE_CHILD_ELEMENTS: NODES_DEF = {
-    'p':           [ 'h1', TEXT_STYLE_ELEMENTS ],
-    'empty-line':  [ 'br' ],
+    'p':             [ 'h1', TEXT_STYLE_ELEMENTS ],
+    'empty-line':    [ 'br' ],
 }
 
 export const STANZA_TITLE_ELEMENTS: NODES_DEF = {
-    'p':           [ 'strong', TEXT_STYLE_ELEMENTS ],
-    'empty-line':  [ 'br' ],
+    'p':             [ 'strong', TEXT_STYLE_ELEMENTS ],
+    'empty-line':    [ 'br' ],
 }
 
 export const STANZA_CHILD_ELEMENTS: NODES_DEF = {
-    'title':       [ 'header', STANZA_TITLE_ELEMENTS ],
-    'subtitle':    [ 'p', TEXT_STYLE_ELEMENTS ],
+    'title':         [ 'header', STANZA_TITLE_ELEMENTS ],
+    'subtitle':      [ 'p', TEXT_STYLE_ELEMENTS ],
 }
 
 export const TABLE: NODES_DEF = {
-    'tr':          [ 'tr', TABLE_CHILDS_ELEMENTS, ['align'] ],
+    'tr':            [ 'tr', TABLE_CHILDS_ELEMENTS, ['align'] ],
 }
 
 export const POEM: NODES_DEF = {
-    'epigraph':    [ 'blockquote' ],
-    'subtitle':    [ 'h2', TEXT_STYLE_ELEMENTS ],
-    'text-author': [ 'p', TEXT_STYLE_ELEMENTS ],
-    'date':        [ 'p', TEXT_STYLE_ELEMENTS ],
-    'stanza':      [ 'stanza' ],
+    'epigraph':      [ 'blockquote' ],
+    'subtitle':      [ 'h2', TEXT_STYLE_ELEMENTS ],
+    'text-author':   [ 'p', TEXT_STYLE_ELEMENTS ],
+    'date':          [ 'p', TEXT_STYLE_ELEMENTS ],
+    'stanza':        [ 'stanza' ],
 }
 
 export const SECTION: NODES_DEF = {
-    'title':       [ 'header', TITLE_CHILD_ELEMENTS ],
-    'epigraph':    [ 'blockquote', 'self' ],
-    'image':       [ 'image' ],
-    'annotation':  [ 'aside' ],
-    'section':     [ 'section', 'self'],
-    'p':           [ 'p', TEXT_STYLE_ELEMENTS ],
-    'poem':        [ 'blockquote', POEM ],
-    'subtitle':    [ 'h2', TEXT_STYLE_ELEMENTS ],
-    'cite':        [ 'blockquote', 'self' ],
-    'empty-line':  [ 'br' ],
-    'table':       [ 'table', TABLE ],
-    'text-author': [ 'p', TEXT_STYLE_ELEMENTS ],
+    'title':         [ 'header', TITLE_CHILD_ELEMENTS ],
+    'epigraph':      [ 'blockquote', 'self' ],
+    'image':         [ 'image' ],
+    'annotation':    [ 'aside' ],
+    'section':       [ 'section', 'self'],
+    'p':             [ 'p', TEXT_STYLE_ELEMENTS ],
+    'poem':          [ 'blockquote', POEM ],
+    'subtitle':      [ 'h2', TEXT_STYLE_ELEMENTS ],
+    'cite':          [ 'blockquote', 'self' ],
+    'empty-line':    [ 'br' ],
+    'table':         [ 'table', TABLE ],
+    'text-author':   [ 'p', TEXT_STYLE_ELEMENTS ],
 }
 
 export const ANNOTATION: NODES_DEF = {
@@ -76,7 +76,7 @@ export const ANNOTATION: NODES_DEF = {
 }
 
 POEM['epigraph'][1] = SECTION
-SECTION['p'][1] = { ...TEXT_STYLE_ELEMENTS, ...{'p':SECTION['p']} }
+SECTION['p'][1] = { ...TEXT_STYLE_ELEMENTS, ...{ 'p': SECTION[ 'p' ] } }
 
 export const BODY: NODES_DEF = {
     'image':       [ 'image' ],

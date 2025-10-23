@@ -13,7 +13,7 @@ class RanobeMeta( BaseModel ):
     class Config:
         from_attributes = True
 
-class Ranobe( BaseModel ):
+class RanobeBase( BaseModel ):
     id: int
     #
     name: str = ""
@@ -29,19 +29,23 @@ class Ranobe( BaseModel ):
     #
     cover: Cover | None
     covers: List[ Cover ] = Field( validation_alias='all_covers' )
-    #
-    # volumes_count: int = 0
-    #
-    ext: str = ""
-    foldersize: int = 0
     meta: Dict[ str, Any ] = {}
-    timestamp: int = 0
 
     class Config:
         from_attributes = True
 
 
-class RanobeVolume( BaseModel ):
+class RanobeFull(RanobeBase):
+    ext: str = ""
+    foldersize: int = 0
+    timestamp: int = 0
+    volumes: List[ RanobeFullVolume ] = []
+
+    class Config:
+        from_attributes = True
+
+
+class RanobeFullVolume( BaseModel ):
     id: int
     ranobe_id: int
     #
@@ -58,6 +62,8 @@ class RanobeVolume( BaseModel ):
     foldersize: int = 0
     download_path: str = ""
     meta: Dict[ str, Any ] = {}
+    # 
+    chapters: List[ RanobeChapter ] = []
 
     class Config:
         from_attributes = True
@@ -88,33 +94,31 @@ class RanobeReader( BaseModel ):
     eng_name: str = ""
     slug: str = ""
     timestamp: int = 0
-    chapters: List[ RanobeReaderChapter ] = []
+    # 
+    navigation: List[ RanobeReaderNavigationElement ] = []
 
     class Config:
         from_attributes = True
 
 
-class RanobeReaderChapter( BaseModel ):
+class RanobeReaderNavigationElement( BaseModel ):
+    id: int
     number: float = 1
     volume_number: float
-    # 
-    filesize: int = 0
-    download_path: str = ""
-
-    class Config:
-        from_attributes = True
-#
-
-
-class RanobeFull(Ranobe):
-    volumes: List[ RanobeVolumeFull ] = []
+    name: str = ""
+    eng_name: str = ""
 
     class Config:
         from_attributes = True
 
-
-class RanobeVolumeFull(RanobeVolume):
-    chapters: List[ RanobeChapter ] = []
+class RanobeReaderChapterContent( BaseModel ):
+    id: int
+    number: float = 1
+    volume_number: float = 1
+    name: str = ""
+    eng_name: str = ""
+    content: object
+    timestamp: int = 0
 
     class Config:
         from_attributes = True
